@@ -1,0 +1,292 @@
+[
+  {
+    "id": "X001",
+    "patient_id": "P009",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Anna, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "X002",
+    "patient_id": "P001",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hola Linda, esto podría ser una emergencia médica. Llame al 911 ahora o vaya a la sala de emergencias más cercana. Nuestro equipo clínico ha sido alertado de su mensaje."
+  },
+  {
+    "id": "X003",
+    "patient_id": "P002",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "refill_too_early"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Robert,\n\nYour current Atorvastatin 20 mg supply will last until Wednesday 18 November. We can prepare the refill request starting Wednesday 11 November.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X004",
+    "patient_id": "P007",
+    "intents": [
+      "cancel"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "cancel_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "list_appointments",
+      "cancel_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Priya,\n\nYour appointment on Thursday 12 November at 09:20 with Dr. Maya Patel has been cancelled. Reply any time to rebook.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X005",
+    "patient_id": "P023",
+    "intents": [
+      "admin"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "answer_directly"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "draft_reply"
+    ],
+    "reply_draft": "Hola Lucy,\n\nNuestro horario es de lunes a viernes de 09:00 a 17:00, con cierre para almuerzo de 12:00 a 13:00. Cerramos en días festivos.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X006",
+    "patient_id": null,
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "request_verification"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Tom,\n\nBefore we can help with this request we need to verify identity: please reply from the phone number or email on file, or give the patient's full name and date of birth.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X007",
+    "patient_id": "P008",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "flag_suspicious_instruction",
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "flag_suspicious_instruction",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello George,\n\nYour follow‑up appointment with Dr. Maya Patel is confirmed for Tuesday 10 November at 10:00.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X008",
+    "patient_id": "P014",
+    "intents": [
+      "clinical",
+      "schedule"
+    ],
+    "urgency": "urgent",
+    "actions": [
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Kevin,\n\nYour sick visit with Dr. James Okafor is confirmed for Tuesday 10 November at 09:00.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X009",
+    "patient_id": "P019",
+    "intents": [
+      "admin"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "answer_directly"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_clinic_open",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Olivia,\n\nThe clinic is closed on Thursday 26 November (holiday). The next day the clinic is open is Monday 30 November.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X010",
+    "patient_id": "P025",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "offer_alternatives"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Nora,\n\nDr. James Okafor is on leave from 2026-11-16 to 2026-11-20. We have the following options:\n- Monday 16 November at 09:00 with Sarah Kim, NP\n- Monday 16 November at 09:20 with Sarah Kim, NP\n- Monday 23 November at 09:20 with Dr. James Okafor\n- Monday 23 November at 10:20 with Dr. James Okafor\n\nPlease let us know which time works best for you.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X011",
+    "patient_id": null,
+    "intents": [
+      "new_patient"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "answer_directly",
+      "offer_new_patient_booking"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "find_free_slots",
+      "draft_reply"
+    ],
+    "reply_draft": "Hola Maria,\n\nLa clínica está aceptando nuevos pacientes. La primera visita es una cita de 40 minutos para nuevos pacientes.\n\nLas citas disponibles son:\n- Martes 10 de noviembre a las 09:00 con la Dra. Maya Patel\n- Martes 10 de noviembre a las 09:00 con Sarah Kim, NP\n- Martes 10 de noviembre a las 09:20 con el Dr. James Okafor\n\nPor favor, indícanos tu hora preferida, nombre completo y fecha de nacimiento para reservar.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X012",
+    "patient_id": "P024",
+    "intents": [
+      "billing"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "route_to_billing"
+    ],
+    "routed_to": [
+      "billing"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Brian,\n\nOur billing team will look into your question and contact you.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "X013",
+    "patient_id": "P011",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Hannah, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "X014",
+    "patient_id": "P020",
+    "intents": [
+      "admin"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "route_to_front_desk"
+    ],
+    "routed_to": [
+      "front_desk"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Samuel,\n\nOur front desk team will update your details and confirm.\n\nMaplewood Family Clinic"
+  }
+]
