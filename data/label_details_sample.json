@@ -1,0 +1,10 @@
+{
+  "_about": "Checkable appointment constraints, transcribed from the 'trap' text of labels_sample.json. The official labels only say which action is expected (e.g. book_appointment); these constraints let the evaluation check that the booking itself is right. Each field is optional.",
+  "M002": {"appointment": {"provider": "KIM", "date_from": "2026-11-13", "date_to": "2026-11-13", "part_of_day": "afternoon"}, "source": "Must find the existing Wed 11 Nov booking and a free Friday afternoon slot with KIM."},
+  "M010": {"appointment": {"provider": "PATEL", "date_from": "2026-11-17", "date_to": "2026-11-17", "part_of_day": "morning", "visit_type": "follow_up"}, "source": "Tue 17 Nov morning, PATEL, follow_up."},
+  "M015": {"appointment": {"provider": "KIM", "date_from": "2026-11-09", "date_to": "2026-11-10", "visit_type": "sick_visit"}, "source": "Sick visit with KIM today or tomorrow."},
+  "M016": {"appointment": {"date_from": "2026-11-16", "date_to": "2026-11-20", "visit_type": "annual_physical"}, "source": "Annual physical (40 min) next week."},
+  "M024": {"appointment": {"provider": "KIM", "date_from": "2026-11-09", "date_to": "2026-11-13", "visit_type": "annual_physical"}, "source": "Needs a 40-minute KIM slot this week."},
+  "M034": {"appointment": {"date_from": "2026-11-23", "date_to": "2026-11-25", "part_of_day": "morning"}, "source": "Week of 23 Nov; 26-27 Nov are holidays."},
+  "M039": {"appointment": {"date_from": "2026-11-09", "date_to": "2026-11-10", "visit_type": "sick_visit"}, "source": "Sick visit within 1 business day, ideally with OKAFOR (provider preference not enforced)."}
+}
