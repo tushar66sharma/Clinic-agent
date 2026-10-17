@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edvak-forge"
+version = "0.1.0"
+description = "AI front-desk agent for a fictional outpatient clinic, with an MCP tool server and evaluation harness."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=2.3,<3",         # Official MCP Python SDK v2 (MCPServer API; v1 used FastMCP)
+    "pydantic>=2.6",       # Data models and output-schema validation
+    "python-dotenv>=1.0",  # Loads .env for local development
+    "openai>=1.40",        # Client for OpenAI-compatible providers (Groq, Cerebras, ...)
+    "fastapi>=0.110",      # HTTP API for the web dashboard
+    "uvicorn>=0.29",       # ASGI server for FastAPI
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",         # FastAPI test client
+    "ruff>=0.4",           # Linter
+]
+ui-test = [
+    "playwright>=1.45",    # Browser smoke test of the dashboard (scripts/ui_smoke.py)
+]
+
+[project.scripts]
+edvak-mcp = "edvak_forge.mcp_server:main"
+edvak-api = "edvak_forge.api.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 115
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Markdown table templates are clearer on one line each.
+"src/edvak_forge/evaluation/report.py" = ["E501"]
