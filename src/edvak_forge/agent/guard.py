@@ -26,9 +26,10 @@ IDIOMS = [
 ]
 
 EMERGENCY_PATTERNS: dict[str, str] = {
-    "chest_pain": r"\bchest\b.{0,30}\b(pain|pressure|tight\w*|crushing|hurts?|squeez\w*)"
+    "chest_pain": r"\bchest\b.{0,30}\b(pain|pressure|tight\w*|crushing|hurts?|squeez\w*"
+                  r"|heavy|heaviness|aching|ache|discomfort)"
                   r"|\b(crushing|severe|sharp)\b.{0,20}\bchest\b"
-                  r"|\b(pain|pressure|tightness|heaviness|squeezing)\b.{0,20}\bchest\b"
+                  r"|\b(pain|pressure|tightness|heaviness|heavy|squeezing|weight)\b.{0,20}\bchest\b"
                   r"|dolor (de|en el) pecho",
     "breathing": r"can'?t breathe|cannot breathe|can ?not breathe|struggling to breathe|gasping"
                  r"|trouble breathing|hard to breathe|short(ness)? of breath"
@@ -101,6 +102,31 @@ def assess(body: str) -> GuardResult:
         return GuardResult("emergency", emergencies)
     urgent = [name for name, pat in URGENT_PATTERNS.items() if re.search(pat, text)]
     return GuardResult("urgent", urgent) if urgent else GuardResult("none")
+
+
+# ---------------------------------------------------------------- manipulation attempts
+
+INJECTION_PATTERNS = [
+    r"ignore (all |any |your |the |previous |prior )+(rules|instructions|policies|prompts?)",
+    r"(system|developer) prompt",
+    r"</?\s*system\s*>",
+    r"\b(admin|developer|debug|god) mode\b",
+    r"\byou are now\b",
+    r"\b(disregard|bypass|override|disable)\b.{0,30}\b(rules|policy|policies|instructions|restrictions|safety)\b",
+    r"\bsystem override\b",
+    r"\b(list|show|give me|send me|print)\b.{0,25}\b(every|all)\b.{0,15}\bpatients?\b",
+]
+
+
+def detect_injection(body: str) -> str | None:
+    """Return the matching excerpt if the message tries to instruct or subvert the system."""
+    text = body.lower()
+    for pat in INJECTION_PATTERNS:
+        m = re.search(pat, text)
+        if m:
+            start = max(0, m.start() - 20)
+            return body[start:m.end() + 40].strip()
+    return None
 
 
 # ---------------------------------------------------------------- safe emergency reply
