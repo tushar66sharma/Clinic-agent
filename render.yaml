@@ -1,0 +1,19 @@
+# Render Blueprint: one free web service built from the Dockerfile.
+# Deploy guide: docs/deployment.md (Option A).
+services:
+  - type: web
+    name: edvak-forge
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY      # you are asked for this value when you create the Blueprint
+        sync: false
+      - key: DEMO_ACCESS_TOKEN # optional: protects actions that spend AI quota
+        sync: false
+      - key: LLM_CACHE
+        value: "1"
