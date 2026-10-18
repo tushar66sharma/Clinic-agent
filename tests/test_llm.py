@@ -130,3 +130,11 @@ def test_rate_limiter_allows_within_budget():
     limiter = RateLimiter(requests_per_minute=5, tokens_per_minute=1000)
     assert limiter.wait(400) == 0.0
     assert limiter.wait(400) == 0.0
+
+
+def test_output_parse_failed_gets_a_repair_retry(monkeypatch):
+    # Seen live: gpt-oss-20b answered in prose; Groq returned 400 output_parse_failed.
+    err = openai.BadRequestError("bad", response=_response(400), body={"error": {
+        "code": "output_parse_failed", "message": "Parsing failed", "failed_generation": "We need to parse..."}})
+    client = make_client([err, '{"value": 5, "note": null}'], monkeypatch)
+    assert client.complete_json(system="s", user="u", schema=Answer, role="analysis").value == 5

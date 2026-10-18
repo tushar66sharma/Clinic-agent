@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import random
 import threading
 import time
@@ -33,6 +34,8 @@ from .base import (
 )
 from .cache import ResponseCache
 from .providers import ProviderConfig
+
+log = logging.getLogger("edvak_forge.llm")
 
 
 class RateLimiter:
@@ -192,7 +195,9 @@ class OpenAICompatibleClient:
         estimate = prompt_estimate + min(max_tokens, COMPLETION_RESERVE)
         limiter = self._limiters[model]
         for attempt in range(self._max_retries + 1):
-            limiter.wait(estimate)
+            waited = limiter.wait(estimate)
+            if waited >= 5:
+                log.info("%s/%s: waited %.0fs for the per-minute budget", self.provider, model, waited)
             try:
                 resp = self._client.chat.completions.create(
                     model=model, messages=messages, response_format=response_format,
@@ -209,22 +214,29 @@ class OpenAICompatibleClient:
                 limiter.correct(estimate, prompt_estimate)
                 body = getattr(exc, "body", None) or {}
                 err = body.get("error", body) if isinstance(body, dict) else {}
-                if isinstance(err, dict) and err.get("code") == "json_validate_failed":
+                # Both codes mean "the model answered, but not in the required JSON": repairable.
+                if isinstance(err, dict) and err.get("code") in ("json_validate_failed", "output_parse_failed"):
                     raise _SchemaRejected(err.get("failed_generation", ""), err.get("message", "")) from exc
                 raise LLMResponseError(f"{self.provider}: request rejected: {exc}") from exc
             except openai.RateLimitError as exc:
                 if attempt == self._max_retries:
                     raise LLMRateLimitError(f"{self.provider}: rate limit after retries: {exc}") from exc
+                log.warning("%s/%s: rate limited (attempt %d/%d), retrying", self.provider, model,
+                            attempt + 1, self._max_retries + 1)
                 self._sleep_backoff(attempt, _retry_after(exc))
                 continue
             except openai.APITimeoutError as exc:
                 if attempt == self._max_retries:
                     raise LLMTimeoutError(f"{self.provider}: timed out after retries.") from exc
+                log.warning("%s/%s: request timed out (attempt %d/%d), retrying", self.provider, model,
+                            attempt + 1, self._max_retries + 1)
                 self._sleep_backoff(attempt)
                 continue
             except (openai.APIConnectionError, openai.InternalServerError) as exc:
                 if attempt == self._max_retries:
                     raise LLMUnavailableError(f"{self.provider}: unavailable: {exc}") from exc
+                log.warning("%s/%s: %s (attempt %d/%d), retrying", self.provider, model,
+                            type(exc).__name__, attempt + 1, self._max_retries + 1)
                 self._sleep_backoff(attempt)
                 continue
 
