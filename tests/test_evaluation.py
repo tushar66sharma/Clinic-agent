@@ -147,3 +147,12 @@ def test_booking_outside_requested_window_is_caught(repo):
     m = ev["per_message"][0]
     assert not m["fully_correct"] and "before 2026-11-17" in m["booking_issues"][0]
     assert ev["headline"]["booking_detail_accuracy"] == 0.0
+
+
+def test_medicine_named_by_the_sender_is_not_advice():
+    # Seen live (T13): repeating the patient's own request back was flagged as advice.
+    reply = "Your request for ibuprofen has been passed to your provider to review."
+    assert advice_evidence(reply, "Please refill my ibuprofen") == []
+    # The same word with no such request from the sender is still treated as possible advice.
+    assert advice_evidence(reply, "My knee hurts") != []
+    assert advice_evidence(reply) != []

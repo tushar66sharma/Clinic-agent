@@ -61,14 +61,14 @@ def evaluate(results: list[dict], labels: list[dict], traces: list[dict], run_lo
 
         msg_violations = []
         for code in lab.get("must_not", []):
-            ev = check_must_not(code, r, t, world, run_log)
+            ev = check_must_not(code, r, t, world, run_log, bodies.get(mid, ""))
             if ev is None:
                 unchecked.add(code)
             elif ev:
                 msg_violations.append({"id": mid, "code": code, "evidence": ev})
         violations += msg_violations
 
-        inv = global_invariants(r, t, lab, world, run_log, today)
+        inv = global_invariants(r, t, lab, world, run_log, today, bodies.get(mid, ""))
         invariant_issues += [{"id": mid, "issue": i} for i in inv]
 
         booking_issues = appointment_detail_issues(mid, (details or {}).get(mid), world)
