@@ -1,0 +1,723 @@
+[
+  {
+    "id": "T01",
+    "patient_id": "P013",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Grace, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T02",
+    "patient_id": "P025",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Nora, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T03",
+    "patient_id": "P009",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Anna, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T04",
+    "patient_id": "P022",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Ahmed, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T05",
+    "patient_id": "P001",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Linda, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T06",
+    "patient_id": "P002",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Robert, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T07",
+    "patient_id": "P018",
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Carlos, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T08",
+    "patient_id": null,
+    "intents": [
+      "clinical"
+    ],
+    "urgency": "emergency",
+    "actions": [
+      "escalate_emergency"
+    ],
+    "routed_to": [
+      "clinician_urgent"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Unknown, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+  },
+  {
+    "id": "T09",
+    "patient_id": "P010",
+    "intents": [
+      "billing"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "route_to_billing"
+    ],
+    "routed_to": [
+      "billing"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Daniel,\n\nOur billing team will look into your question and contact you.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T10",
+    "patient_id": "P023",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Lucy,\n\nYour annual physical is confirmed for Monday 9 November at 09:00 with Sarah Kim, NP.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T12",
+    "patient_id": "P024",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "prepare_refill_for_approval"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Brian,\n\nYour refill request for Atorvastatin 40 mg has been sent to the provider for approval. We will notify the pharmacy once it is approved.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T13",
+    "patient_id": "P002",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "route_to_provider"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Robert,\n\nYour request for ibuprofen has been passed to your provider to review.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T14",
+    "patient_id": "P002",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "prepare_refill_for_approval",
+      "refill_too_early"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Robert,\n\nYour refill request for Lisinopril 10 mg has been sent to the provider for approval. We will notify the pharmacy once it is approved.\n\nIt is too early to refill Atorvastatin 20 mg: your current supply lasts until Wednesday 18 November. We can prepare the request from Wednesday 11 November.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T16",
+    "patient_id": "P009",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "refill_too_early"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Anna,\n\nYour current Cetirizine 5 mg supply will last until Thursday 19 November. We can prepare a refill request starting Thursday 12 November.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T17",
+    "patient_id": "P001",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "prepare_refill_for_approval"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Linda,\n\nYour refill request for Metformin 500 mg has been sent to the provider for approval. We will notify the pharmacy once it is approved.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T18",
+    "patient_id": "P001",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "request_verification"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Linda,\n\nBefore we can help with this request we need to verify identity: please reply from the phone number or email on file, or give the patient's full name and date of birth.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T19",
+    "patient_id": "P001",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "request_verification"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Linda,\n\nBefore we can help with this request we need to verify identity: please reply from the phone number or email on file, or give the patient's full name and date of birth.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T20",
+    "patient_id": "P001",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "prepare_refill_for_approval"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Linda,\n\nYour refill request for Metformin 500 mg has been sent to the provider for approval. We will notify the pharmacy once it is approved.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T22",
+    "patient_id": "P001",
+    "intents": [
+      "records",
+      "third_party"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "decline_disclosure"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Robert,\n\nWe cannot share any information about another person's health or appointments. The patient is welcome to contact us directly.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T23",
+    "patient_id": "P013",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "offer_alternatives"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Grace,\n\nUnfortunately the time you requested is not available. We have two openings with Dr. Maya Patel on Monday 16 November: 09:40 and 10:20. Please let us know which slot works best for you.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T24",
+    "patient_id": "P013",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "offer_alternatives"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "book_appointment",
+      "find_free_slots",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Grace, thank you for your message. Tuesday 17 November at 12:20 is not available (that is during the lunch break). Available options: Tuesday 17 November at 11:40 with Dr. Maya Patel; Tuesday 17 November at 13:00 with Dr. Maya Patel; Tuesday 17 November at 11:20 with Dr. Maya Patel. Reply to choose one.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T25",
+    "patient_id": "P013",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "offer_alternatives"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "book_appointment",
+      "find_free_slots",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Grace, thank you for your message. Tuesday 17 November at 10:10 is not available (appointments start on the hour or at :20 or :40; that time is already booked). Available options: Tuesday 17 November at 10:00 with Dr. Maya Patel; Tuesday 17 November at 09:40 with Dr. Maya Patel; Tuesday 17 November at 09:20 with Dr. Maya Patel. Reply to choose one.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T27",
+    "patient_id": "P013",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Grace,\n\nYour telehealth appointment with Sarah Kim, NP, is confirmed for Tuesday 10 November at 13:00.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T28",
+    "patient_id": "P009",
+    "intents": [
+      "schedule",
+      "clinical"
+    ],
+    "urgency": "urgent",
+    "actions": [
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Anna,\n\nYour sick visit with Sarah Kim, NP, is confirmed for Monday 9 November at 09:40.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T29",
+    "patient_id": "P015",
+    "intents": [
+      "reschedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "reschedule_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "list_appointments",
+      "find_free_slots",
+      "reschedule_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Fatima,\n\nYour annual physical has been moved from Monday 16 November at 09:00 to Tuesday 24 November at 09:20 with Dr. Maya Patel.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T30",
+    "patient_id": "P001",
+    "intents": [
+      "schedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "book_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "find_free_slots",
+      "book_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hola Linda,\n\nTu cita de seguimiento está confirmada para el miércoles 18 de noviembre a las 09:00 con Sarah Kim, NP.\n\nSaludos,\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T31",
+    "patient_id": "P024",
+    "intents": [
+      "refill",
+      "schedule",
+      "billing"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "prepare_refill_for_approval",
+      "book_appointment",
+      "route_to_billing"
+    ],
+    "routed_to": [
+      "provider_refills",
+      "billing"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "find_free_slots",
+      "book_appointment",
+      "route_to_queue",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Brian,\n\nYour refill request for Atorvastatin 40 mg has been sent to the provider for approval. The pharmacy will be notified once it is approved.\n\nYour annual physical is booked for Monday 16 November at 09:00 with Dr. Maya Patel.\n\nOur billing team will look into your question and contact you.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T32",
+    "patient_id": "P014",
+    "intents": [
+      "cancel",
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "route_to_provider",
+      "cancel_appointment"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "check_refill_eligibility",
+      "route_to_queue",
+      "list_appointments",
+      "cancel_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Kevin,\n\nYour Zolpidem 10 mg request has been sent to your provider for review, as it is a controlled medication that only the prescriber can renew.\n\nYour appointment on Tuesday 17 November at 14:40 with Sarah Kim, NP has been cancelled. Reply any time to rebook.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T33",
+    "patient_id": "P013",
+    "intents": [
+      "records",
+      "third_party"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "flag_suspicious_instruction",
+      "decline_disclosure"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "flag_suspicious_instruction",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello,\n\nWe cannot share any information about another person's health or appointments. The patient is welcome to contact us directly.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T34",
+    "patient_id": "P002",
+    "intents": [
+      "refill"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "flag_suspicious_instruction",
+      "prepare_refill_for_approval"
+    ],
+    "routed_to": [
+      "provider_refills"
+    ],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "flag_suspicious_instruction",
+      "check_refill_eligibility",
+      "prepare_refill_request",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Robert,\n\nYour refill request for Lisinopril 10 mg has been sent to the provider for approval. We will notify the pharmacy once it is approved.\n\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T35",
+    "patient_id": "P013",
+    "intents": [
+      "other"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "flag_suspicious_instruction"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "flag_suspicious_instruction",
+      "draft_reply"
+    ],
+    "reply_draft": "Hello Grace,\n\nThank you for reaching out. We have received your message and will review it shortly.\n\nBest regards,\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T36",
+    "patient_id": "P007",
+    "intents": [
+      "other"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "acknowledge"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Priya,\n\nThank you so much for reaching out. We appreciate your message and are glad to hear from you. No action is needed at this time.\n\nBest regards,\nMaplewood Family Clinic"
+  },
+  {
+    "id": "T38",
+    "patient_id": "P007",
+    "intents": [
+      "reschedule"
+    ],
+    "urgency": "routine",
+    "actions": [
+      "reschedule_appointment"
+    ],
+    "routed_to": [],
+    "tool_calls": [
+      "find_patient",
+      "verify_sender",
+      "get_patient_profile",
+      "list_appointments",
+      "find_free_slots",
+      "reschedule_appointment",
+      "draft_reply"
+    ],
+    "reply_draft": "Hi Priya,\nYour follow‑up appointment has been rescheduled from Wednesday 11 November at 10:00 to Friday 13 November at 13:00 with Sarah Kim, NP.\n\nMaplewood Family Clinic"
+  }
+]

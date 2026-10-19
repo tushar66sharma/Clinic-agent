@@ -29,8 +29,8 @@
       "ticket_id": "T004",
       "message_id": "M006",
       "queue": "clinician_urgent",
-      "priority": "emergency",
-      "reason": "Possible emergency: low_mood",
+      "priority": "urgent",
+      "reason": "Clinical: low mood, hopelessness",
       "patient_id": "P005"
     },
     {
@@ -69,16 +69,16 @@
       "ticket_id": "T009",
       "message_id": "M019",
       "queue": "provider_refills",
-      "priority": "routine",
+      "priority": "urgent",
       "reason": "Oxycodone 5 mg: controlled_substance",
       "patient_id": "P021"
     },
     {
       "ticket_id": "T010",
       "message_id": "M019",
-      "queue": "clinician_routine",
-      "priority": "routine",
-      "reason": "Clinical: Pain after surgery",
+      "queue": "clinician_urgent",
+      "priority": "urgent",
+      "reason": "Clinical: pain after surgery",
       "patient_id": "P021"
     },
     {
@@ -110,7 +110,7 @@
       "message_id": "M030",
       "queue": "clinician_routine",
       "priority": "routine",
-      "reason": "Clinical: Explanation of high TSH level",
+      "reason": "Clinical: high TSH",
       "patient_id": "P019"
     },
     {
@@ -126,7 +126,7 @@
       "message_id": "M033",
       "queue": "front_desk",
       "priority": "routine",
-      "reason": "Account change: Change phone number to 555-0199",
+      "reason": "Account change: Please change my phone number to 555-0199.",
       "patient_id": "P012"
     },
     {
@@ -158,6 +158,15 @@
     },
     {
       "request_id": "RR002",
+      "message_id": "M006",
+      "patient_id": "P005",
+      "medication": "Sertraline 50 mg",
+      "prescriber": "PATEL",
+      "status": "pending_provider_approval",
+      "queue": "provider_refills"
+    },
+    {
+      "request_id": "RR003",
       "message_id": "M009",
       "patient_id": "P012",
       "medication": "Levothyroxine 75 mcg",
@@ -166,7 +175,7 @@
       "queue": "provider_refills"
     },
     {
-      "request_id": "RR003",
+      "request_id": "RR004",
       "message_id": "M018",
       "patient_id": "P022",
       "medication": "Insulin glargine 100 units/mL pen",
@@ -175,7 +184,7 @@
       "queue": "provider_refills"
     },
     {
-      "request_id": "RR004",
+      "request_id": "RR005",
       "message_id": "M020",
       "patient_id": "P001",
       "medication": "Metformin 500 mg",
@@ -184,7 +193,7 @@
       "queue": "provider_refills"
     },
     {
-      "request_id": "RR005",
+      "request_id": "RR006",
       "message_id": "M025",
       "patient_id": "P024",
       "medication": "Atorvastatin 40 mg",
@@ -227,13 +236,13 @@
     {
       "message_id": "M006",
       "language": "English",
-      "text": "Hi Emily, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message.",
+      "text": "Hi Emily,\n\nYour refill request for Sertraline 50 mg has been sent to the provider for approval. The pharmacy will be notified once it is approved. A clinician will review your message today and contact you.\n\nIf you ever feel unsafe or have thoughts of harming yourself, call or text 988, or call 911.\n\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {
       "message_id": "M007",
       "language": "English",
-      "text": "Hello Jessica,\n\nWe’re happy to welcome you as a new patient. A first visit is a 40‑minute appointment. We have openings on Tuesday 10 November at 09:00 with Dr. Maya Patel, Dr. James Okafor, or Sarah Kim, NP. Please let us know which provider you prefer, along with your full name and date of birth, and we’ll book your appointment.\n\nMaplewood Family Clinic",
+      "text": "Hello Jessica,\n\nThank you for your interest in joining Maplewood Family Clinic. We are currently accepting new patients. Your first visit will be a 40‑minute appointment.\n\nWe have the following openings for a new‑patient appointment on Tuesday, 10 November:\n- 09:00 with Dr. Maya Patel\n- 09:00 with Dr. James Okafor\n- 09:00 with Sarah Kim, NP\n\nPlease let us know which time you prefer, along with your full name and date of birth, so we can book your appointment.\n\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {
@@ -305,7 +314,7 @@
     {
       "message_id": "M019",
       "language": "English",
-      "text": "Hi Rachel,\n\nYour Oxycodone 5 mg request has been sent to your provider for review, as it is a controlled medication that only the prescriber can renew. A clinician will review your message soon and contact you.\n\nMaplewood Family Clinic",
+      "text": "Hi Rachel,\n\nYour Oxycodone 5 mg request has been sent to your provider for review, as it is a controlled medication that only the prescriber can renew. A clinician will review your message today and contact you.\n\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {
@@ -329,7 +338,7 @@
     {
       "message_id": "M023",
       "language": "English",
-      "text": "Hi Olivia,\n\nThe clinic is closed on Friday 27 November for the holiday. We will be open again on Monday 30 November.\n\nMaplewood Family Clinic",
+      "text": "Hi Olivia,\n\nThe clinic is closed on Friday 27 November (holiday). The next day the clinic is open is Monday 30 November.\n\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {
@@ -359,7 +368,7 @@
     {
       "message_id": "M028",
       "language": "English",
-      "text": "Hi Nora,\n\nDr. James Okafor is on leave from 2026-11-16 to 2026-11-20, so the requested time is not available. We can offer you one of the following:\n- Wednesday 18 November at 09:00 with Dr. Maya Patel\n- Wednesday 18 November at 09:00 with Sarah Kim, NP\n- Monday 23 November at 09:20 with Dr. James Okafor\n- Monday 23 November at 10:20 with Dr. James Okafor\n\nPlease let us know which option works best for you.\n\nMaplewood Family Clinic",
+      "text": "Hi Nora,\n\nThank you for your message. The requested time is not available because Dr. James Okafor is on leave from 2026-11-16 to 2026-11-20. We can offer you one of the following options:\n\n- Wednesday 18 November at 09:00 with Dr. Maya Patel\n- Wednesday 18 November at 09:00 with Sarah Kim, NP\n- Monday 23 November at 09:20 with Dr. James Okafor\n- Monday 23 November at 10:20 with Dr. James Okafor\n\nPlease let us know which slot works best for you.\n\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {
@@ -377,7 +386,7 @@
     {
       "message_id": "M031",
       "language": "English",
-      "text": "Hi Priya,\n\nThank you so much for reaching out. We appreciate your message and are glad to hear from you. No action is needed at this time.\n\nBest regards,\nMaplewood Family Clinic",
+      "text": "Hi Priya,\n\nThank you so much for reaching out. We appreciate your message and are glad to hear from you. No action is needed on your part at this time.\n\nBest regards,\nMaplewood Family Clinic",
       "status": "draft_for_staff_review"
     },
     {

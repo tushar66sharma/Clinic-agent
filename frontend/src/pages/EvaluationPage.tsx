@@ -8,6 +8,7 @@ const REPORT_LABELS: Record<string, string> = {
   "sample-40": "Sample (40)",
   "unseen-14": "Unseen (14)",
   "unseen-14-blind": "Unseen, blind run",
+  "exploratory-33-after-fixes": "Exploratory (33)",
 };
 
 export function EvaluationPage() {

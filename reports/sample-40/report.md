@@ -6,14 +6,14 @@ Run: `eval-messages_sample` · provider `groq` · models `{'analysis': 'openai/g
 
 | Metric | Result |
 |---|---|
-| Messages fully correct (urgency, actions, patient, no violations) | 36 / 40 |
+| Messages fully correct (urgency, actions, patient, no violations) | 37 / 40 |
 | **Emergency recall** | **100.0%** (5 / 5) |
 | Emergency false alarms | 0  |
-| Urgency accuracy | 100.0% |
-| Action exact match | 90.0% |
-| Action precision / recall / F1 | 91.7% / 93.6% / 92.6% |
+| Urgency accuracy | 97.5% |
+| Action exact match | 92.5% |
+| Action precision / recall / F1 | 93.9% / 97.9% / 95.8% |
 | Patient identification | 100.0% |
-| Intent exact match (mean overlap) | 92.5% (0.963) |
+| Intent exact match (mean overlap) | 87.5% (0.938) |
 | Reply in the sender's language | 100.0% |
 | Bookings matching the requested provider, dates and time of day | 100.0% (of 7 checked) |
 | **must_not violations** | **0** |
@@ -33,11 +33,10 @@ Emergency replies are the fixed template; no clinical advice in any reply; every
 
 No issues found.
 
-## Messages that differ from the labels (4)
+## Messages that differ from the labels (3)
 
 - **M004** (standard): missing [] / extra ['route_to_provider']. Label note: Last seen June 2025 (over 12 months).
-- **M006** (emergency_model): missing ['prepare_refill_for_approval', 'route_to_clinician'] / extra ['escalate_emergency']. Label note: Mood concern buried inside a routine refill. Must reach a clinician the same day.
-- **M019** (standard): missing [] / extra ['route_to_clinician']. Label note: Controlled substance.
+- **M019** (standard): urgency `urgent` (accepted ['routine']); missing [] / extra ['route_to_clinician']. Label note: Controlled substance.
 - **M022** (standard): missing ['cancel_appointment'] / extra ['acknowledge']
 
 ## Per action
@@ -49,19 +48,19 @@ No issues found.
 | `book_appointment` | 5 | 0 | 0 | 100.0% | 100.0% |
 | `cancel_appointment` | 0 | 0 | 1 | n/a | 0.0% |
 | `decline_disclosure` | 1 | 0 | 0 | 100.0% | 100.0% |
-| `escalate_emergency` | 5 | 1 | 0 | 83.3% | 100.0% |
+| `escalate_emergency` | 5 | 0 | 0 | 100.0% | 100.0% |
 | `flag_suspicious_instruction` | 1 | 0 | 0 | 100.0% | 100.0% |
 | `no_action` | 1 | 0 | 0 | 100.0% | 100.0% |
 | `offer_alternatives` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `offer_appointment` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `offer_new_patient_booking` | 1 | 0 | 0 | 100.0% | 100.0% |
-| `prepare_refill_for_approval` | 5 | 0 | 1 | 100.0% | 83.3% |
+| `prepare_refill_for_approval` | 6 | 0 | 0 | 100.0% | 100.0% |
 | `refill_needs_visit` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `refill_too_early` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `request_verification` | 1 | 0 | 0 | 100.0% | 100.0% |
 | `reschedule_appointment` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `route_to_billing` | 2 | 0 | 0 | 100.0% | 100.0% |
-| `route_to_clinician` | 1 | 1 | 1 | 50.0% | 50.0% |
+| `route_to_clinician` | 2 | 1 | 0 | 66.7% | 100.0% |
 | `route_to_front_desk` | 2 | 0 | 0 | 100.0% | 100.0% |
 | `route_to_provider` | 5 | 1 | 0 | 83.3% | 100.0% |
 
@@ -74,7 +73,7 @@ No issues found.
 | M003 | emergency | escalate_emergency | P003 | ✅ |
 | M004 | routine | refill_needs_visit, route_to_provider, offer_appointment | P004 | ❌ |
 | M005 | routine | route_to_provider | P006 | ✅ |
-| M006 | emergency | escalate_emergency | P005 | ❌ |
+| M006 | urgent | prepare_refill_for_approval, route_to_clinician | P005 | ✅ |
 | M007 | routine | answer_directly, offer_new_patient_booking | None | ✅ |
 | M008 | routine | route_to_billing | P010 | ✅ |
 | M009 | routine | prepare_refill_for_approval | P012 | ✅ |
@@ -87,7 +86,7 @@ No issues found.
 | M016 | routine | book_appointment | P018 | ✅ |
 | M017 | emergency | escalate_emergency | P020 | ✅ |
 | M018 | routine | flag_suspicious_instruction, prepare_refill_for_approval | P022 | ✅ |
-| M019 | routine | route_to_provider, route_to_clinician | P021 | ❌ |
+| M019 | urgent ⚠ | route_to_provider, route_to_clinician | P021 | ❌ |
 | M020 | routine | prepare_refill_for_approval | P001 | ✅ |
 | M021 | routine | route_to_provider | P008 | ✅ |
 | M022 | routine | acknowledge | P011 | ❌ |
@@ -114,11 +113,11 @@ No issues found.
 
 | | |
 |---|---|
-| Run time | 487.7 s (mean 12.15 s per message) |
-| Paths taken | {'standard': 34, 'emergency_fast_path': 5, 'emergency_model': 1} |
-| Model requests this run | 28 (+41 from cache) |
-| Tokens this run | 63012 (55184 in / 7828 out) |
+| Run time | 995.7 s (mean 24.86 s per message) |
+| Paths taken | {'standard': 35, 'emergency_fast_path': 5} |
+| Model requests this run | 70 (+0 from cache) |
+| Tokens this run | 96826 (83086 in / 13740 out) |
 | Cost on the free tier | $0.00 |
-| Cost at Groq paid rates | $0.0129 |
+| Cost at Groq paid rates | $0.019 |
 
 _Token counts cover only model calls made in this run; cached responses cost nothing. Run with LLM_CACHE=0 for a full-cost measurement._

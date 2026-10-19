@@ -1,0 +1,30 @@
+{
+  "messages": 33,
+  "seconds": 66.4,
+  "provider": "groq",
+  "models": {
+    "analysis": "openai/gpt-oss-20b",
+    "reply": "openai/gpt-oss-20b"
+  },
+  "usage": {
+    "requests": 9,
+    "prompt_tokens": 6770,
+    "completion_tokens": 889,
+    "total_tokens": 7659,
+    "cache_hits": 45,
+    "by_model": {
+      "openai/gpt-oss-20b": {
+        "requests": 9,
+        "prompt_tokens": 6770,
+        "completion_tokens": 889
+      }
+    }
+  },
+  "paths": {
+    "emergency_fast_path": 6,
+    "emergency_model": 2,
+    "standard": 25
+  },
+  "today": "2026-11-09",
+  "transport": "stdio"
+}

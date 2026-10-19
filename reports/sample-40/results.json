@@ -120,30 +120,36 @@
     "patient_id": "P005",
     "intents": [
       "refill",
-      "clinical"
+      "clinical",
+      "other"
     ],
-    "urgency": "emergency",
+    "urgency": "urgent",
     "actions": [
-      "escalate_emergency"
+      "prepare_refill_for_approval",
+      "route_to_clinician"
     ],
     "routed_to": [
+      "provider_refills",
       "clinician_urgent"
     ],
     "tool_calls": [
       "find_patient",
       "verify_sender",
       "get_patient_profile",
+      "check_refill_eligibility",
+      "prepare_refill_request",
       "route_to_queue",
       "draft_reply"
     ],
-    "reply_draft": "Hi Emily, this may be a medical emergency. Please call 911 now or go to the nearest emergency department. Our clinical team has been alerted to your message."
+    "reply_draft": "Hi Emily,\n\nYour refill request for Sertraline 50 mg has been sent to the provider for approval. The pharmacy will be notified once it is approved. A clinician will review your message today and contact you.\n\nIf you ever feel unsafe or have thoughts of harming yourself, call or text 988, or call 911.\n\nMaplewood Family Clinic"
   },
   {
     "id": "M007",
     "patient_id": null,
     "intents": [
       "new_patient",
-      "schedule"
+      "schedule",
+      "admin"
     ],
     "urgency": "routine",
     "actions": [
@@ -156,7 +162,7 @@
       "find_free_slots",
       "draft_reply"
     ],
-    "reply_draft": "Hello Jessica,\n\nWe’re happy to welcome you as a new patient. A first visit is a 40‑minute appointment. We have openings on Tuesday 10 November at 09:00 with Dr. Maya Patel, Dr. James Okafor, or Sarah Kim, NP. Please let us know which provider you prefer, along with your full name and date of birth, and we’ll book your appointment.\n\nMaplewood Family Clinic"
+    "reply_draft": "Hello Jessica,\n\nThank you for your interest in joining Maplewood Family Clinic. We are currently accepting new patients. Your first visit will be a 40‑minute appointment.\n\nWe have the following openings for a new‑patient appointment on Tuesday, 10 November:\n- 09:00 with Dr. Maya Patel\n- 09:00 with Dr. James Okafor\n- 09:00 with Sarah Kim, NP\n\nPlease let us know which time you prefer, along with your full name and date of birth, so we can book your appointment.\n\nMaplewood Family Clinic"
   },
   {
     "id": "M008",
@@ -405,14 +411,14 @@
       "refill",
       "clinical"
     ],
-    "urgency": "routine",
+    "urgency": "urgent",
     "actions": [
       "route_to_provider",
       "route_to_clinician"
     ],
     "routed_to": [
       "provider_refills",
-      "clinician_routine"
+      "clinician_urgent"
     ],
     "tool_calls": [
       "find_patient",
@@ -422,7 +428,7 @@
       "route_to_queue",
       "draft_reply"
     ],
-    "reply_draft": "Hi Rachel,\n\nYour Oxycodone 5 mg request has been sent to your provider for review, as it is a controlled medication that only the prescriber can renew. A clinician will review your message soon and contact you.\n\nMaplewood Family Clinic"
+    "reply_draft": "Hi Rachel,\n\nYour Oxycodone 5 mg request has been sent to your provider for review, as it is a controlled medication that only the prescriber can renew. A clinician will review your message today and contact you.\n\nMaplewood Family Clinic"
   },
   {
     "id": "M020",
@@ -508,7 +514,7 @@
       "check_clinic_open",
       "draft_reply"
     ],
-    "reply_draft": "Hi Olivia,\n\nThe clinic is closed on Friday 27 November for the holiday. We will be open again on Monday 30 November.\n\nMaplewood Family Clinic"
+    "reply_draft": "Hi Olivia,\n\nThe clinic is closed on Friday 27 November (holiday). The next day the clinic is open is Monday 30 November.\n\nMaplewood Family Clinic"
   },
   {
     "id": "M024",
@@ -621,7 +627,7 @@
       "find_free_slots",
       "draft_reply"
     ],
-    "reply_draft": "Hi Nora,\n\nDr. James Okafor is on leave from 2026-11-16 to 2026-11-20, so the requested time is not available. We can offer you one of the following:\n- Wednesday 18 November at 09:00 with Dr. Maya Patel\n- Wednesday 18 November at 09:00 with Sarah Kim, NP\n- Monday 23 November at 09:20 with Dr. James Okafor\n- Monday 23 November at 10:20 with Dr. James Okafor\n\nPlease let us know which option works best for you.\n\nMaplewood Family Clinic"
+    "reply_draft": "Hi Nora,\n\nThank you for your message. The requested time is not available because Dr. James Okafor is on leave from 2026-11-16 to 2026-11-20. We can offer you one of the following options:\n\n- Wednesday 18 November at 09:00 with Dr. Maya Patel\n- Wednesday 18 November at 09:00 with Sarah Kim, NP\n- Monday 23 November at 09:20 with Dr. James Okafor\n- Monday 23 November at 10:20 with Dr. James Okafor\n\nPlease let us know which slot works best for you.\n\nMaplewood Family Clinic"
   },
   {
     "id": "M029",
@@ -683,7 +689,7 @@
       "get_patient_profile",
       "draft_reply"
     ],
-    "reply_draft": "Hi Priya,\n\nThank you so much for reaching out. We appreciate your message and are glad to hear from you. No action is needed at this time.\n\nBest regards,\nMaplewood Family Clinic"
+    "reply_draft": "Hi Priya,\n\nThank you so much for reaching out. We appreciate your message and are glad to hear from you. No action is needed on your part at this time.\n\nBest regards,\nMaplewood Family Clinic"
   },
   {
     "id": "M032",
@@ -852,7 +858,8 @@
     "id": "M040",
     "patient_id": "P009",
     "intents": [
-      "records"
+      "records",
+      "other"
     ],
     "urgency": "routine",
     "actions": [
