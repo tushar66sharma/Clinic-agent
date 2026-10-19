@@ -4,6 +4,7 @@ from datetime import date
 
 from edvak_forge.clinic.identity import (
     find_patients,
+    normalize_email,
     normalize_name,
     normalize_phone,
     verify_sender,
@@ -83,3 +84,21 @@ def test_find_by_caregiver_phone(repo):
 def test_contact_match_ranks_above_dob_only(repo):
     matches = find_patients(repo.patients, phone="555-0102", dob=date(1958, 3, 14))
     assert matches[0].patient_id == "P002"  # phone beats a DOB-only match (P001)
+
+
+def test_known_phone_with_a_different_name_is_verified_but_flagged(repo):
+    # Found during manual testing: "arpita" writing from Grace Park's phone.
+    v = verify_sender(repo.patient("P013"), from_name="arpita", from_contact="555-0113")
+    assert v.verified and v.method == "contact_on_file"
+    assert v.reason == "sender_contact_on_file_but_name_differs"
+    same = verify_sender(repo.patient("P013"), from_name="Grace Park", from_contact="555-0113")
+    assert same.reason == "sender_contact_on_file"
+
+
+def test_pasted_email_debris_is_ignored(repo):
+    # Found in manual testing: "mailto:" copied from a link made a real patient unverified.
+    for contact in ["mailto:fatima.hassan@example.com", "  Fatima.Hassan@Example.com\t",
+                    "<fatima.hassan@example.com>", "mailto:fatima.hassan@example.com?subject=refill"]:
+        v = verify_sender(repo.patient("P015"), from_name="Fatima Hassan\t", from_contact=contact)
+        assert v.verified, contact
+    assert normalize_email("mailto:A@B.com") == "a@b.com"

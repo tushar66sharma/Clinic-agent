@@ -49,7 +49,15 @@ def normalize_phone(phone: str | None) -> str:
 
 
 def normalize_email(email: str | None) -> str:
-    return (email or "").strip().lower()
+    """Lower-case, trim, and drop copy-paste debris: "mailto:A@B.com " -> "a@b.com".
+
+    Found in manual testing: an address pasted from a link kept its "mailto:" prefix, so a
+    real patient was treated as unverified.
+    """
+    text = (email or "").strip().lower()
+    if text.startswith("mailto:"):
+        text = text[len("mailto:"):]
+    return text.split("?", 1)[0].strip().strip("<>").strip()
 
 
 def contact_matches(contact: str | None, phone: str | None, email: str | None) -> bool:
@@ -145,7 +153,11 @@ def verify_sender(
 
     if contact_matches(from_contact, patient.phone, patient.email):
         relationship: Relationship = "caregiver" if is_caregiver_name else "self"
-        return Verification(True, relationship, "contact_on_file", "sender_contact_on_file")
+        # The policy accepts contact-on-file alone, so this stays verified. But a different
+        # name on a known phone (e.g. a family member sharing it) is made visible to staff.
+        name_differs = bool(from_name and from_name.strip()) and not (is_patient_name or is_caregiver_name)
+        reason = "sender_contact_on_file_but_name_differs" if name_differs else "sender_contact_on_file"
+        return Verification(True, relationship, "contact_on_file", reason)
 
     if caregiver and contact_matches(from_contact, caregiver.phone, caregiver.email):
         return Verification(True, "caregiver", "contact_on_file", "caregiver_contact_on_file")
