@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from ..llm.base import LLMClient, LLMError
+from ..llm.base import LLMClient, LLMError, LLMTimeoutError
 from . import guard as guard_mod
 from .prompts import REPLY_SYSTEM_PROMPT, analysis_system_prompt, analysis_user_prompt
 from .schemas import URGENCY_RANK, AgentResult, Analysis, AppointmentRequest, InboxMessage, ReplyDraft
@@ -141,7 +142,7 @@ class MessageProcessor:
         info = await self.clinic_info()
         # The provider client is blocking (and may sleep to respect rate limits), so it runs in
         # a worker thread to keep the event loop free for the web API and MCP traffic.
-        return await asyncio.to_thread(
+        return await _call_with_deadline(
             self.llm.complete_json,
             system=analysis_system_prompt(self.today, info),
             user=analysis_user_prompt(msg.model_dump()),
@@ -160,7 +161,7 @@ class MessageProcessor:
                     f"facts:\n{facts}")
             for attempt in range(2):
                 try:
-                    draft = await asyncio.to_thread(
+                    draft = await _call_with_deadline(
                         self.llm.complete_json, system=REPLY_SYSTEM_PROMPT, user=user,
                         schema=ReplyDraft, role="reply", max_tokens=700)
                 except LLMError as exc:
@@ -276,9 +277,15 @@ class MessageProcessor:
             ctx.urgency = "urgent"
             ctx.notes.append("urgency raised to urgent by guard: " + ", ".join(ctx.guard.matches))
 
-        if "spam" in ctx.intents and len(ctx.intents) == 1:
+        # Manipulation attempts are flagged whether or not the model noticed them, and a
+        # flagged message is never dismissed as spam.
+        injection = guard_mod.detect_injection(ctx.msg.body)
+        suspicious = a.suspicious_instruction or injection
+        if "spam" in ctx.intents and len(ctx.intents) == 1 and not suspicious:
             ctx.act("no_action")
             return
+        if suspicious and ctx.intents == ["spam"]:
+            ctx.intents = ["other"]
 
         await self._identify(ctx)
 
@@ -290,14 +297,17 @@ class MessageProcessor:
             if "third_party" not in ctx.intents:
                 ctx.intents.append("third_party")
 
-        if a.suspicious_instruction:
+        if suspicious:
             await self.tools.call("flag_suspicious_instruction", message_id=ctx.msg.id,
-                                  excerpt=a.suspicious_instruction,
+                                  excerpt=a.suspicious_instruction or injection,
                                   reason="Message tries to instruct the system or claims authority.")
             ctx.act("flag_suspicious_instruction")
             ctx.notes.append("suspicious instruction ignored; request handled under normal policy")
 
-        is_new_patient = "new_patient" in ctx.intents and ctx.patient_id is None
+        # Someone not on file asking whether the clinic takes new patients is a prospective
+        # patient, even if the model filed it as a general question.
+        is_new_patient = ctx.patient_id is None and (
+            "new_patient" in ctx.intents or "new_patients" in a.questions)
         # Verification is needed only for requests that read or change a patient's health or
         # appointment data. General questions, billing hand-offs and clinical concerns routed
         # to a clinician disclose nothing, so they proceed without it.
@@ -316,10 +326,18 @@ class MessageProcessor:
                     await self._refills(ctx)
                 if a.booking and "new_patient" not in ctx.intents:
                     await self._book(ctx, a.booking)
-                if "reschedule" in ctx.intents or a.reschedule_to:
-                    await self._reschedule(ctx)
-                if "cancel" in ctx.intents:
-                    await self._cancel(ctx)
+                # A flagged manipulation attempt never drives cancellations or reschedules
+                # ("cancel every appointment"): those destroy bookings and are left to staff.
+                # Approval-gated actions (refill requests) and new bookings still follow policy.
+                if suspicious and ("cancel" in ctx.intents or "reschedule" in ctx.intents):
+                    ctx.facts.append("We could not act on the appointment changes in this message "
+                                     "as written. A member of our team will review it.")
+                    ctx.notes.append("cancel/reschedule skipped: message flagged as manipulation")
+                else:
+                    if "reschedule" in ctx.intents or a.reschedule_to:
+                        await self._reschedule(ctx)
+                    if "cancel" in ctx.intents:
+                        await self._cancel(ctx)
                 if a.records_request or "records" in ctx.intents:
                     await self._handoff(ctx, "front_desk", "route_to_front_desk",
                                         "Records request",
@@ -357,13 +375,56 @@ class MessageProcessor:
             ctx.act("decline_disclosure")
             ctx.facts.append("We cannot share any information about another person's health or "
                              "appointments. The patient is welcome to contact us directly.")
+            ctx.notes.append("sender not verified: no health or appointment information used")
+            return
+
+        # A health concern must not wait for verification: alerting a clinician discloses
+        # nothing to the sender. (Found in manual testing: an unknown sender with a fever for
+        # three days only got "please verify" and no clinician was alerted.)
+        await self._clinician_for_unverified(ctx)
+
+        ctx.act("request_verification")
+        if ctx.patient_id is None:
+            # No record matched, so this may be a new person or a patient writing from a new
+            # number. Cover both without confirming whether any record exists.
+            ctx.facts.append("If you are already a patient here, please verify your identity: reply "
+                             "from the phone number or email on file, or give your full name and "
+                             "date of birth. Do not confirm whether any record exists.")
+            wants_visit = bool(a and (a.booking or "schedule" in ctx.intents))
+            if wants_visit:
+                await self._new_patient(ctx, intro="If you are new to the clinic, we are accepting "
+                                                   "new patients.")
         else:
-            ctx.act("request_verification")
             ctx.facts.append("Before we can help with this request we need to verify identity: "
                              "please reply from the phone number or email on file, or give the "
                              "patient's full name and date of birth. Do not confirm whether any "
                              "record exists.")
         ctx.notes.append("sender not verified: no health or appointment information used")
+
+    async def _clinician_for_unverified(self, ctx: Context) -> None:
+        a = ctx.analysis
+        mood = bool(ctx.guard and "low_mood" in ctx.guard.matches)
+        concern = bool(a and (a.clinical_concern or "clinical" in ctx.intents)) or mood or bool(
+            ctx.guard and ctx.guard.level == "urgent")
+        if not concern:
+            return
+        urgent = URGENCY_RANK[ctx.urgency] >= 1 or mood
+        queue = "clinician_urgent" if urgent else "clinician_routine"
+        reason = (a.clinical_concern or a.urgency_reason) if a else "health concern"
+        r = await self.tools.call("route_to_queue", message_id=ctx.msg.id, queue=queue,
+                                  reason=f"Unverified sender, clinical: {reason}"[:300],
+                                  priority="urgent" if urgent else "routine",
+                                  patient_id=ctx.patient_id)
+        if not r.get("ok"):
+            ctx.notes.append(f"routing failed: {r.get('error')}")
+            return
+        ctx.act("route_to_clinician")
+        ctx.route(queue)
+        ctx.facts.append(f"A clinician will review your message {'today' if urgent else 'soon'}. "
+                         "(Do not give any medical advice.)")
+        if mood:
+            ctx.facts.append(CRISIS_LINE)
+        ctx.notes.append("clinical concern from an unverified sender routed to a clinician")
 
     async def _refills(self, ctx: Context) -> None:
         a = ctx.analysis
@@ -429,7 +490,10 @@ class MessageProcessor:
         if a is None:
             return
         mood = bool(ctx.guard and "low_mood" in ctx.guard.matches)
-        wants_clinician = a.needs_clinician or mood or (
+        # needs_clinician only counts with an actual health concern: a smaller model was seen
+        # setting it on plain booking requests, sending them to clinicians for no reason.
+        has_concern = bool(a.clinical_concern) or "clinical" in ctx.intents
+        wants_clinician = (a.needs_clinician and has_concern) or mood or (
             "clinical" in ctx.intents and not ctx.booked and not a.booking)
         if not wants_clinician or ctx.booked:
             return
@@ -613,23 +677,30 @@ class MessageProcessor:
         if len(appts) > 1:
             # Design call: never guess which appointment to cancel.
             ctx.act("acknowledge")
-            ctx.facts.append("You have more than one appointment on that day: "
-                             + "; ".join(f"{x['start']} with {x['provider_name']}" for x in appts)
-                             + ". Please reply to tell us which one to cancel, or both.")
+            if day:
+                listing = "; ".join(f"{x['start']} with {x['provider_name']}" for x in appts)
+                ctx.facts.append(f"You have more than one appointment on {fmt_day(day.isoformat())}: "
+                                 f"{listing}. Please reply to tell us which one to cancel, or both.")
+            else:
+                # No date given: the appointments are on different days, so name each date.
+                listing = "; ".join(f"{fmt_day(x['date'])} at {x['start']} with {x['provider_name']}"
+                                    for x in appts)
+                ctx.facts.append(f"You have several upcoming appointments: {listing}. "
+                                 "Please reply to tell us which one to cancel.")
             ctx.notes.append("ambiguous cancellation: asked the patient instead of guessing")
         else:
             ctx.act("acknowledge")
             ctx.facts.append("We could not find an appointment on that date. Please reply with "
                              "the date and time of the appointment you want to cancel.")
 
-    async def _new_patient(self, ctx: Context) -> None:
+    async def _new_patient(self, ctx: Context, intro: str = "Yes, the clinic is accepting new "
+                                                             "patients.") -> None:
         ctx.act("answer_directly", "offer_new_patient_booking")
         req = ctx.analysis.booking if ctx.analysis else None
         requested = _parse(req.date_from) if req else None
         start = max(requested or self.today, self._next_business_day(self.today))
         slots = await self._slots("new_patient", start, start + timedelta(days=14), [None], limit=3)
-        ctx.facts.append("Yes, the clinic is accepting new patients. A first visit is a 40-minute "
-                         "new-patient appointment.")
+        ctx.facts.append(f"{intro} A first visit is a 40-minute new-patient appointment.")
         if slots:
             ctx.facts.append("Available new-patient appointments: " + "; ".join(fmt_slot(s) for s in slots)
                              + ". Reply with your preferred time, full name and date of birth to book.")
@@ -681,6 +752,26 @@ class MessageProcessor:
 
 
 # ====================================================================== helpers
+
+DEFAULT_LLM_DEADLINE_SECONDS = 240.0
+
+
+async def _call_with_deadline(fn, /, **kwargs):
+    """Run a blocking provider call in a worker thread with a hard wall-clock deadline.
+
+    Why: live runs showed single Groq requests hanging for 6-13 minutes despite the HTTP
+    timeout. A message must never sit that long, so past the deadline the call is abandoned
+    and the caller's normal failure path runs (analysis -> hand to a human; reply -> template).
+    The abandoned thread may still finish in the background; its result is ignored.
+    Deadline: LLM_DEADLINE_SECONDS (default 240 s, enough for ordinary rate-limit retries).
+    """
+    deadline = float(os.getenv("LLM_DEADLINE_SECONDS", DEFAULT_LLM_DEADLINE_SECONDS))
+    try:
+        return await asyncio.wait_for(asyncio.to_thread(fn, **kwargs), timeout=deadline)
+    except TimeoutError as exc:
+        log.warning("AI call exceeded the %.0fs deadline; falling back", deadline)
+        raise LLMTimeoutError(f"AI call exceeded the {deadline:.0f}s deadline") from exc
+
 
 TIME_RE = re.compile(r"\b(\d{1,2}):(\d{2})\b")
 DAY_RE = re.compile(r"\b(\d{1,2}) (January|February|March|April|May|June|July|August|September|"
