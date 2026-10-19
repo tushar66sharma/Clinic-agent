@@ -4,12 +4,75 @@
 
 Built for the Edvak Forge take-home project. The clinic (Maplewood Family Clinic) and all patients are **fictional**. No real patient data is used anywhere.
 
+## For Edvak reviewers: the short version
+
+### Run it in four commands
+
+You need Python 3.11+ and a free Groq key from https://console.groq.com/keys (no card).
+
+```
+python -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+copy .env.example .env          # then paste your key after GROQ_API_KEY=
+.venv\Scripts\python -m edvak_forge.evaluation --agent
+```
+
+This processes the 40 sample messages through the MCP tool server and scores them. It writes `runs/eval-messages_sample/results.json` (one result per message in your format) and `report.md`. It takes about 8 minutes on the free tier. On macOS/Linux use `.venv/bin/python` and `cp`.
+
+To process new messages, put them in a JSON file in the same format as `messages_sample.json`, then run `.venv\Scripts\python -m edvak_forge.agent.runner --messages your_file.json`. The web dashboard is optional; see [Running it](#running-it).
+
+### Results on the 40 sample messages
+
+| | |
+|---|---|
+| Emergencies escalated | **5 / 5** (none missed, none answered automatically) |
+| `must_not` violations | **0** |
+| Fully correct (urgency, actions, patient) | **37 / 40** |
+| Urgency accuracy / action exact match | 97.5% / 92.5% |
+
+This was a fully fresh live run with no cached answers. Full report: [reports/sample-40/report.md](reports/sample-40/report.md). On 14 and 33 new messages written after the agent was built, it also missed no emergencies and made no forbidden actions.
+
+**What it gets wrong:**
+- **M004:** also routes to the provider, as the refill policy says; the label omits this.
+- **M019:** adds a clinician review of post-surgery pain.
+- **M022:** asks which of two appointments to cancel instead of guessing.
+- **Borderline messages vary between runs,** e.g. M006 low mood was escalated as an emergency in one run.
+
+Details are under [Results](#results).
+
+### Architecture and why
+
+- **A code-level guard escalates emergencies before any AI call.** An emergency never waits for, or depends on, the model. Replies to emergencies are a fixed template.
+- **The AI only reads and writes.** One call turns the message into a structured request; code carries it out through 16 MCP tools; a second call writes the reply from verified facts, and code checks it invents no dates or times.
+- **Clinic policy is enforced inside the tools.** Refill rules, booking rules and identity verification are plain tested code. Health data requires a verification token that only `verify_sender` issues, so a model mistake or a prompt injection cannot cause a forbidden action.
+- **Why not a free-form tool-calling loop:** about 8× the tokens on the free tier, and the order of actions isn't guaranteed. Full reasoning is in [Architecture and why](#architecture-and-why).
+
+### Reused vs built
+
+Reused: the MCP Python SDK, FastAPI, Pydantic, the `openai` client against Groq, React/Vite/Tailwind, pytest and Playwright. Built: the tools and rules, the agent, the guard, the AI-provider layer, the evaluation harness, extra test sets and the dashboard. See [What was reused and what was built](#what-was-reused-and-what-was-built).
+
+**Models and cost:** `openai/gpt-oss-120b` reads messages and `openai/gpt-oss-20b` writes replies, both on Groq. A full 40-message run costs $0 on the free tier, or about $0.014–0.019 at Groq's paid rates.
+
+### Assumption: `patient_id` for unverified senders
+
+The brief says `patient_id` is null if the sender isn't a verified patient on file. The answer key disagrees: M011, an unverified sender with the wrong date of birth, expects `P002`, and M027, a husband asking about his wife, expects `P013`. **The agent follows the answer key.** `patient_id` names the patient the message is about whenever that patient is identified, and is null only when no patient can be identified (M007 new patient, M038 spam). Being identified never means being verified: for these senders no health or appointment tool runs and nothing is disclosed. The trace records `verified: false`. Switching to the brief's wording would be a one-line change.
+
+### Another week, and before real patient data
+
+- **Another week:** a much larger evaluation set written with clinicians (multilingual emergencies especially), several runs to measure variance, an AI judge for reply quality, and handlers for requests that now go to staff.
+- **Before real patient data:** staff authentication, encrypted storage and an audit log, an AI provider under a BAA with zero retention (not free tiers), stronger identity checks, clinical validation of escalation, and human approval of every reply.
+
+Full lists are under [Limitations, next week, and before real patient data](#limitations-next-week-and-before-real-patient-data).
+
+---
+
 ![Inbox with an emergency message open](docs/screenshots/desktop-emergency-detail.png)
 
 ---
 
 ## Contents
 
+0. [For Edvak reviewers: the short version](#for-edvak-reviewers-the-short-version)
 1. [The problem](#the-problem)
 2. [What it does](#what-it-does)
 3. [Results](#results)
@@ -50,31 +113,37 @@ The goal is an agent that works the inbox safely. It must never miss an emergenc
 
 Scored by the evaluation harness. Full reports are in [reports/](reports/README.md).
 
-| Metric | 40 sample messages | 14 unseen messages |
-|---|---|---|
-| Fully correct (urgency, actions, patient, no violations) | 36 / 40 | 13 / 14 |
-| **Emergencies escalated** | **5 / 5** | **3 / 3** |
-| False emergency alarms | 0 | 0 |
-| Urgency accuracy | 100% | 100% |
-| Action exact match | 90.0% | 92.9% |
-| Action precision / recall / F1 | 91.7% / 93.6% / 92.6% | — |
-| Patient identified correctly | 100% | 100% |
-| Bookings on the requested provider, day and time of day | 7 / 7 | — |
-| Replies in the sender's language | 100% | 100% |
-| **Forbidden actions (`must_not`)** | **0** | **0** |
-| Safety-rule issues on any message | 0 | 0 |
+| Metric | 40 sample messages | 14 unseen messages | 33 exploratory (blind → after fixes) |
+|---|---|---|---|
+| Fully correct (urgency, actions, patient, no violations) | 37 / 40 | 13 / 14 | 28 → 33 / 33 |
+| **Emergencies escalated** | **5 / 5** | **3 / 3** | **8 / 8** |
+| False emergency alarms | 0 | 0 | 0 |
+| Urgency accuracy | 97.5% | 100% | 100% |
+| Action exact match | 92.5% | 92.9% | 84.9% → 100% |
+| Action precision / recall / F1 | 93.9% / 97.9% / 95.8% | — | — |
+| Patient identified correctly | 100% | 100% | 97% → 100% |
+| Bookings on the requested provider, day and time of day | 7 / 7 | — | 6 → 7 / 7 |
+| Replies in the sender's language | 100% | 100% | 100% |
+| **Forbidden actions (`must_not`)** | **0** | **0** | **0** |
+| Safety-rule issues on any message | 0 | 0 | 0 |
 
 The **unseen** messages were written after the agent was built, with expected answers fixed before the first run. The first, blind run also scored 13/14 with 3/3 emergencies.
 
-**Cost and speed.** A full 40-message run makes about 70 AI requests and uses about 63,000–72,000 tokens. It costs **$0 on Groq's free tier**, or about **$0.014 at Groq's paid rates**. It takes about **8 minutes** on the free tier, because the client waits to stay under 8,000 tokens per minute. Reruns reuse cached answers and take seconds.
+The exploratory set (typos, Hinglish, idioms, several requests at once, edge dates, manipulation attempts) ran on the smaller gpt-oss-20b, because the main model's daily allowance was used up. The blind first run scored 28/33; four fixes followed, so the 33/33 is not blind. See [reports/README.md](reports/README.md).
+
+The 40-message figures come from a fully fresh live run on the brief's test data (`edvak_forge_data`, no cached answers) on 2026-10-18.
+
+**Run-to-run variation.** Two fresh runs differed only on borderline messages. M006 was judged an emergency in one run and urgent (refill plus same-day clinician, as labelled) in the other. M019 was routine in one and urgent in the other. Emergencies, forbidden actions and safety rules were identical across runs.
+
+**Cost and speed.** A full 40-message run makes about 70 AI requests and uses about 63,000–97,000 tokens. It costs **$0 on Groq's free tier**, or about **$0.014–0.019 at Groq's paid rates**. It takes about **8 minutes** on the free tier, because the client waits to stay under 8,000 tokens per minute. Reruns reuse cached answers and take seconds.
 
 **What it gets wrong.**
 
 | Message | What happened | Why it is kept |
 |---|---|---|
 | M004 | Also routes to the provider | The refill policy says to offer an appointment **and** route to the provider; the label omits the routing |
-| M006 | Treats "I don't see the point of anything" as an emergency | The label accepts emergency urgency but expected a refill plus a same-day clinician; over-escalation is the safe direction |
-| M019 | Adds a clinician review for post-surgery pain | Defensible, not expected |
+| M006 (some runs) | Treats "I don't see the point of anything" as an emergency | Varies between runs. The label accepts emergency urgency but expected a refill plus a same-day clinician; over-escalation is the safe direction |
+| M019 | Adds a clinician review for post-surgery pain, sometimes marked urgent | Defensible, not expected |
 | M022 | Asks which of two appointments to cancel instead of cancelling | Hannah Lee has two appointments that day; the agent does not guess |
 | X014 (unseen) | "When is my next appointment?" goes to the front desk | No handler for that request yet; it fails safe |
 
@@ -188,7 +257,7 @@ Edvak_forge/
 │   ├── evaluation/           evaluation harness
 │   └── api/                  web API for the dashboard
 ├── frontend/                 React dashboard (src/pages, src/components, design tokens in src/index.css)
-├── tests/                    164 automated tests (no API key needed)
+├── tests/                    205 automated tests (no API key needed)
 ├── scripts/ui_smoke.py       browser test of the dashboard at desktop and mobile sizes
 ├── reports/                  published evaluation results
 └── docs/                     all design documentation
@@ -229,7 +298,7 @@ The first line creates an isolated environment for this project's packages. The 
 .venv\Scripts\python -m pytest -q
 ```
 
-*Expected:* `164 passed`. The tests don't need an API key or internet access.
+*Expected:* `205 passed`. The tests don't need an API key or internet access.
 
 ### 4. Get a free AI key and configure it
 
@@ -249,6 +318,7 @@ The first line creates an isolated environment for this project's packages. The 
 | `LLM_BASE_URL` | no | provider default | Override the endpoint |
 | `LLM_TIMEOUT_SECONDS` | no | `60` | Give up on one AI request after this long |
 | `LLM_MAX_RETRIES` | no | `4` | Retries on rate limits, timeouts and server errors |
+| `LLM_DEADLINE_SECONDS` | no | `240` | Hard limit for one AI call; past it the message goes to a human |
 | `LLM_MAX_REQUESTS_PER_MINUTE` | no | provider default | Client-side request throttle |
 | `LLM_CACHE` | no | `1` | Reuse saved AI answers for identical requests (`0` = always call) |
 | `CLINIC_TODAY` | no | `2026-11-09` | The clinic's "today" (fixed by the brief) |
@@ -324,7 +394,7 @@ Then open http://localhost:5173.
 ## Testing and evaluation
 
 ```bash
-.venv\Scripts\python -m pytest -q                       # 164 tests, no API key needed
+.venv\Scripts\python -m pytest -q                       # 205 tests, no API key needed
 .venv\Scripts\python -m ruff check src tests            # lint
 cd frontend && npm run build                            # type-check + build the dashboard
 .venv\Scripts\python -m edvak_forge.evaluation --agent  # run the agent, then score it
@@ -340,6 +410,8 @@ Browser test of the dashboard. The API must be running and the dashboard built f
 ```
 
 What each test covers, the metric definitions and the bugs found are in [docs/testing.md](docs/testing.md).
+
+**Testing by hand:** [docs/manual-test-plan.md](docs/manual-test-plan.md) has 48 step-by-step browser tests: emergencies, refills, privacy, appointments, prompt injection, dashboard behaviour and security settings. Each gives the exact text to enter and the expected result. [docs/manual-test-plan-exploratory.md](docs/manual-test-plan-exploratory.md) adds 39 harder tests that try to break the agent.
 
 ## Deployment
 
@@ -384,6 +456,7 @@ More: [docs/troubleshooting.md](docs/troubleshooting.md).
 ## Limitations, next week, and before real patient data
 
 **Known limitations**
+- **`patient_id` follows the answer key, not the brief's wording.** It names the identified patient even when the sender is unverified (M011, M027); nothing is disclosed to such senders. See [the assumption above](#assumption-patient_id-for-unverified-senders).
 - **Unhandled requests go to the front desk.** Requests with no handler, such as "when is my next appointment?", are handed to staff rather than answered.
 - **The guard is pattern-based.** The emergency guard can miss new phrasings. The AI is the second detector; both missed nothing in 54 messages, but that is a small sample.
 - **Some checks are heuristics.** The reply-language and clinical-advice checks are pattern-based, so replies were also read by hand.
@@ -422,10 +495,12 @@ Details: [docs/security.md](docs/security.md#known-gaps-to-address-before-real-p
 | [docs/error-handling.md](docs/error-handling.md) | Failures, retries, fallbacks, diagnostics |
 | [docs/security.md](docs/security.md) | Privacy, secrets, API protections, gaps |
 | [docs/testing.md](docs/testing.md) | Tests, evaluation metrics, results, cost |
+| [docs/manual-test-plan.md](docs/manual-test-plan.md) | Hands-on test checklist with expected results |
 | [docs/deployment.md](docs/deployment.md) | Free deployment, step by step |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Common problems and fixes |
 | [docs/decisions/](docs/decisions/) | Eight decision records with alternatives and trade-offs |
 | [docs/progress-log.md](docs/progress-log.md) | Dated log of every step |
+| [docs/interview-questions-and-answers.md](docs/interview-questions-and-answers.md) | 350 interview questions with detailed answers and diagrams |
 | [reports/](reports/README.md) | Published evaluation results |
 
 <details>
