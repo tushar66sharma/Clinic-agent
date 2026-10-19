@@ -63,13 +63,25 @@ To add a new OpenAI-compatible provider, add one entry to `llm/providers.py`. To
 
 | Provider | Limits | Source |
 |---|---|---|
-| Groq | **1,000 requests/day and 8,000 tokens/minute per model** | Measured from this account's response headers, 2026-10-18 |
+| Groq | **1,000 requests/day, 8,000 tokens/minute and 200,000 tokens/day, per model, per organization** | Requests and per-minute limits measured from response headers; the daily token limit from Groq's own 429 error message, 2026-10-18 |
 | Cerebras | 5 requests/min, 30K uncached tokens/min, 1M tokens/day (free trial) | Official docs, 2026-10-18 |
 | OpenRouter | `:free` models: 20 requests/min; 50/day, or 1,000/day after buying 10 credits once | Official docs, 2026-10-18 |
 | Mistral | Free tier exists; numbers only in the console | Official docs, 2026-10-18 |
 | Ollama | None (local) | — |
 
 Free tiers can change or end at any time. Nothing in the code depends on one vendor.
+
+### Important: limits belong to the account, not the key
+
+Groq applies limits **per organization**. Creating a new API key in the same Groq account does **not** reset the daily allowance: both keys draw from the same 200,000 tokens per day for each model. This was confirmed on 2026-10-18, when a freshly created key was rejected with "tokens per day (TPD): Limit 200000, Used 198840".
+
+The daily window is rolling (24 hours), so allowance frees up gradually. A fully fresh 40-message run uses about 80,000–97,000 tokens on the analysis model, so about two fresh runs fit in a day.
+
+When the main model's daily allowance is used up, you can:
+- wait for it to free up;
+- switch the analysis model to one with its own allowance, for example `LLM_MODEL=openai/gpt-oss-20b` (smaller, so possibly less accurate);
+- use a different provider (`LLM_PROVIDER=cerebras`) or a key from a different Groq account;
+- rerun with `LLM_CACHE=1`, which reuses saved answers and costs nothing.
 
 ## Cost of a run
 
@@ -86,6 +98,7 @@ On free tiers the cost is **$0**. Each run prints its token usage and saves it i
 | `<PROVIDER>_API_KEY` | — | The key for the chosen provider |
 | `LLM_TIMEOUT_SECONDS` | 60 | Give up on one request after this long |
 | `LLM_MAX_RETRIES` | 4 | Retries on 429, timeouts, network errors and 5xx |
+| `LLM_DEADLINE_SECONDS` | 240 | Hard wall-clock limit for one AI call, retries included. Past it the call is abandoned: an analysis failure hands the message to a human, a reply failure uses the template |
 | `LLM_MAX_REQUESTS_PER_MINUTE` | provider default | Override the client-side request throttle |
 | `LLM_CACHE` | 1 | `1` reuses cached responses for identical requests; `0` always calls the model |
 

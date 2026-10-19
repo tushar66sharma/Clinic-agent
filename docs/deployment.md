@@ -2,7 +2,18 @@
 
 This guide takes you from "the code is on my computer" to "the app is live on the internet", for free. No previous deployment experience is assumed. Each step says what to do, why, and what you should see.
 
-Free-tier facts below were checked against the official Render and Vercel documentation on 2026-10-18. Free tiers change, so glance at the linked pages before you start.
+Free-tier facts below were checked against the official Render and Vercel documentation on 2026-10-18; Groq's daily token limit was confirmed from its own error message on 2026-10-18. Free tiers change, so glance at the linked pages before you start.
+
+**Overview of the steps (Option A, recommended):**
+
+```mermaid
+flowchart LR
+    A[Push code to GitHub] --> B[Render: New Blueprint]
+    B --> C[Paste GROQ_API_KEY<br/>and access token]
+    C --> D[Render builds the Docker image<br/>3-6 minutes]
+    D --> E[Open the URL<br/>check /api/health]
+    E --> F[Try Emergency and Refill<br/>on New message]
+```
 
 ## Which option should I choose?
 
@@ -18,17 +29,35 @@ Both options use the same code. Option A was **tested locally with the exact Doc
 
 ## What you need before you start
 
-1. **The code on GitHub.** Render and Vercel deploy from a Git repository.
-   - Create an empty repository at https://github.com/new. Private is fine.
-   - In the project folder, run:
-     ```bash
-     git add .
-     git commit -m "Edvak Forge"
-     git branch -M main
-     git remote add origin https://github.com/<you>/<repo>.git
-     git push -u origin main
-     ```
-   - **Check first** that `.env` is not listed by `git status`. It is in `.gitignore`, so it should never appear. Your API key must never be pushed.
+1. **The code on GitHub.** Render and Vercel deploy from a Git repository. This project is already a Git repository with commits, so you only need to save the latest changes and push.
+
+   **a. Create an empty repository on GitHub.**
+   Go to https://github.com/new, sign in, enter a name (for example `edvak-forge`), choose Private or Public, and click **Create repository**. **Don't** tick "Add a README", ".gitignore" or "license": the project already has them, and extra files would make the first push fail.
+   *Expected result:* GitHub shows an empty repository page with its address, like `https://github.com/<you>/edvak-forge.git`.
+
+   **b. Check that your secret key will not be uploaded.** In PowerShell, in the project folder:
+   ```
+   cd F:\Project1\Edvak_forge
+   git check-ignore .env
+   ```
+   *Expected result:* it prints `.env`, meaning Git ignores the file. If it prints nothing, **stop** and don't push.
+
+   **c. Save the latest changes in Git.**
+   ```
+   git add -A
+   git status
+   git commit -m "Edvak Forge submission"
+   ```
+   In the `git status` list, check that `.env`, `.venv/`, `runs/` and `frontend/node_modules/` are **not** listed (they're ignored), and that `reports/`, `data/` and `frontend/package-lock.json` **are** included: the deployment needs them. If Git asks "Please tell me who you are", run `git config --global user.name "Your Name"` and `git config --global user.email "you@example.com"` once, then commit again.
+
+   **d. Push to GitHub.** Use the address from step a:
+   ```
+   git branch -M main
+   git remote add origin https://github.com/<you>/edvak-forge.git
+   git push -u origin main
+   ```
+   The first time, Windows opens a GitHub sign-in window; sign in and allow access. If it says `remote origin already exists`, run `git remote set-url origin <address>` instead of `git remote add`.
+   *Expected result:* refreshing the GitHub page shows your files and the README. This link is also what you send to Edvak.
 2. **A free Groq API key.** See [ai-integration.md](ai-integration.md#how-to-get-a-groq-key).
 3. **An access token you make up**, for example a long random password. It stops strangers who find your URL from spending your AI quota. It's optional but recommended for a public URL.
 
@@ -42,7 +71,7 @@ Both options use the same code. Option A was **tested locally with the exact Doc
 | Render free web service | Render may restart free services at any time; no shell access | Same as above |
 | Render bandwidth and build minutes | Count against monthly included amounts. Without a payment method, the service is suspended if exceeded | Not an issue for a demo |
 | Vercel Hobby | Free, **personal and non-commercial use only**. 100 GB transfer and 100 deployments per day | Fine for a take-home project or demo |
-| Groq free plan | Per model: 1,000 requests/day, 8,000 tokens/minute | One full 40-message run fits; a busy public demo would not. Use the access token |
+| Groq free plan | Per model and **per account**: 1,000 requests/day, 8,000 tokens/minute, **200,000 tokens/day** (rolling 24 hours). A new key in the same Groq account shares the same allowance | One fresh 40-message run uses about half a day's allowance on the main model. A new deployment has no saved AI answers, so **Process all** on a fresh deployment always costs that much. Use the access token so strangers can't use it up |
 
 Sources: [Render free instances](https://render.com/docs/free), [Render web services](https://render.com/docs/web-services), [Render Blueprint spec](https://render.com/docs/blueprint-spec), [Vercel Hobby plan](https://vercel.com/docs/plans/hobby).
 
@@ -91,6 +120,13 @@ Do these in order. Each one tests a different part.
 - **Redeploy:** pushing to `main` redeploys automatically (`autoDeployTrigger: commit`). To redeploy by hand: **Manual Deploy**, then **Deploy latest commit**.
 - **Rollback:** open **Events**, find an earlier successful deploy, and click **Rollback**.
 - **Change a setting or key:** **Environment**, edit the value, then **Save Changes**. Render restarts the service with the new value.
+
+### A6. Before a live demo or interview
+1. **Wake the service 5 minutes early.** Open the app URL; a sleeping free service takes about a minute to wake. Keep the tab open: activity keeps it awake.
+2. **Check `/api/health`** shows `"configured":true`.
+3. **Don't use Process all on the deployed app that day.** It costs about half the daily AI allowance on a fresh deployment. Single messages on **New message** cost very little (about 3,000 tokens each). If you want the full inbox processed for the demo, do it the day before, or show the published results on the **Evaluation** page instead.
+4. **Have a fallback ready.** If the main model's daily allowance runs out, set `LLM_MODEL` to `openai/gpt-oss-20b` under **Environment** and save. That model has its own allowance. Emergencies are escalated even with no AI at all.
+5. **Remember the data resets** when the service sleeps or restarts. That's expected (the brief only needs changes to last for a run).
 
 ---
 
@@ -160,7 +196,9 @@ Open http://localhost:10000.
 | Browser console shows a CORS error | `ALLOWED_ORIGINS` doesn't exactly match the Vercel URL | Copy the URL exactly, including `https://`, with no trailing slash |
 | Evaluation page shows "No reports published" | `reports/` not in the repo, or the package was installed without `-e` (Option B) | Commit `reports/`; use `pip install -e .`, or set `EDVAK_HOME` to the repo folder |
 | Results vanished | The service slept or restarted (ephemeral filesystem) | Expected on the free tier; process the messages again |
-| Runs stop with many hand-offs to humans | Groq daily or per-minute limit reached | Wait, or switch `LLM_PROVIDER` (see [ai-integration.md](ai-integration.md)) |
+| Runs stop with many hand-offs to humans; logs show `rate limited (attempt n/5)` | Groq's daily token limit (200,000 per model, per account) is used up | A new key from the same account won't help. Wait for the rolling 24-hour window, or set `LLM_MODEL=openai/gpt-oss-20b`, or switch `LLM_PROVIDER` (see [ai-integration.md](ai-integration.md)) |
+| `git push` rejected: "fetch first" or "unrelated histories" | The GitHub repository was created with a README or other files | Create a new **empty** repository (no README, no .gitignore) and push again |
+| `git push` asks for a password and rejects it | GitHub no longer accepts account passwords for Git | Use the sign-in window that opens on Windows, or create a personal access token on GitHub and use it as the password |
 
 More general problems are covered in [troubleshooting.md](troubleshooting.md).
 

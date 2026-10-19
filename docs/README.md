@@ -12,6 +12,10 @@
 | Diagrams | Mermaid diagrams live inline in architecture, workflows, system-design, error-handling and the README, next to the text that explains them | Done |
 | [error-handling.md](error-handling.md) | Failures, retries, fallbacks, diagnostics | Done |
 | [security.md](security.md) | Verification, privacy, secrets | Tool server done |
+| [interview-questions-and-answers.md](interview-questions-and-answers.md) | 350 interview questions with detailed answers and diagrams: workflows, implementation, why/how, tech stack | Done |
+| [sample-40-checklist.md](sample-40-checklist.md) | The 40 test messages from `edvak_forge_data` with the answer key's expected results, as a manual checklist | Done |
+| [manual-test-plan-exploratory.md](manual-test-plan-exploratory.md) | 39 harder tests: odd wording, typos, other languages, several requests at once, edge dates | Done |
+| [manual-test-plan.md](manual-test-plan.md) | Step-by-step tests to run yourself in the browser, with expected results | Done |
 | [testing.md](testing.md) | Tests, evaluation harness, results, known failures, cost | Done |
 | [troubleshooting.md](troubleshooting.md) | Common problems and fixes | Done |
 | [deployment.md](deployment.md) | Free-tier deployment guide (Render, Vercel, local Docker) | Done |

@@ -143,3 +143,65 @@ A dated record of each step: what was done, what was decided, and what is still 
 
 **Open**
 - Nothing is committed to Git yet. The user decides when to commit and push.
+
+## 2026-10-18 — Findings from the user's manual testing
+
+**Found by the user** (variant of test A1: "My chest feels heavy and my arms are numb", sent as "arpita" from Grace Park's phone):
+- **Guard gap.** "Chest feels heavy" was not in the emergency guard; the AI caught it, so the outcome was safe, but without the AI it would have gone to the front desk as routine. **Fixed.** Chest heaviness, ache and discomfort were added, with tests (including that "chest x-ray report" and "chest cold" do not trigger). Re-checked against all 54 labelled messages: 0 false alarms.
+- **Different name on a known phone.** Verified, as the clinic policy allows (contact on file). Now the verification note says `sender_contact_on_file_but_name_differs`, so staff can see it. The policy itself is unchanged; stronger checks for shared phones are listed in security.md as needed before real data.
+
+Tests: 170 passing.
+
+## 2026-10-18 (afternoon) — Live testing with new API keys
+
+**Done**
+- Fully fresh live run of the 40 messages read directly from `edvak_forge_data`: **37/40**, 5/5 emergencies, 0 violations. Published as `reports/sample-40`.
+- Turned the exploratory plan into a scorable set (`data/messages_exploratory.json`, labels, booking details; generator `scripts/make_exploratory_set.py`), plus consistency tests for all label files.
+- Exploratory set on gpt-oss-20b: blind **28/33** (8/8 emergencies, 0 violations), then **33/33** after fixes (published as `reports/exploratory-33-after-fixes`).
+
+**Found and fixed**
+- A Groq request can hang 6–13 minutes despite the timeout. Added a hard per-call deadline, plus warning logs for every retry and long wait.
+- Groq limits are per organization: a new key in the same account had the same exhausted daily quota (200K tokens/day for gpt-oss-120b). Documented.
+- `output_parse_failed` now retried; clinician routing now requires a health concern; code-level manipulation detection added; evaluation advice check no longer flags the patient's own words.
+- Shell-written regex lost its word boundaries (they became invisible backspace characters). Found because X007 wasn't detected; repaired, and the whole codebase was scanned for the same problem (only one file affected).
+
+Tests: 193 passing.
+
+## 2026-10-19 — Finding from the user's manual testing
+
+- **Pasted email addresses were not recognised.** The user pasted `mailto:fatima.hassan@example.com` (copied from a link) and a real patient was treated as unverified: safe, but wrong. Email matching now ignores a `mailto:` prefix, `?subject=...` suffixes, angle brackets, extra spaces, tabs and capital letters. Covered by a regression test (194 tests passing).
+
+## 2026-10-19 — Verification of every test case given to the user
+
+Every test case handed out (manual plan, exploratory plan, in-chat checklist, sample checklist) was run against the current code.
+
+| Set | Result |
+|---|---|
+| Manual plan A–F + chat checklist Q01 (`data/messages_manual.json`, 30) | 28/30 first, then **30/30** after fixes |
+| Manual plan G–H, dashboard (`scripts/ui_smoke.py`, extended with H2–H10) | **40/40 checks**, desktop and mobile |
+| Manual plan I, security settings (live servers with token, empty key, wrong key) | **4/4** |
+| Exploratory 33, current code, gpt-oss-20b | **33/33**. The main model was stopped at 9/33 (all correct, 8/8 emergencies) by Groq's daily limit |
+| Unseen 14 | 13/14 (X014 known gap) |
+| Sample 40, cached answers | 36/40, the same 4 known differences; no regressions |
+
+**Found and fixed during verification** (200 tests passing):
+- A flagged manipulation message ("cancel every appointment") still listed the sender's appointments and offered cancellation. Flagged messages now never drive cancellations or reschedules.
+- An ambiguous cancellation without a date said "on that day" and listed times without dates. It now names each date.
+- "Do you take new patients?" filed by the model as a general question got no booking offer. Unknown senders asking about new patients now get one.
+- Browser-test issues (not app bugs): a race before measuring the focus outline, an ambiguous "Copy" locator, and the console error caused by the deliberately blocked request in H10.
+
+## 2026-10-19 — README aligned with the brief's submission requirements
+
+- Added **"For Edvak reviewers: the short version"** at the top of the README (about 700 words): a 4-command quick start, results on the 40 samples, what it gets wrong, architecture and why, reused vs built, models and cost, another week, and before real patient data. The detailed beginner guide remains below, as required by CLAUDE.md. This resolves the conflict between the brief's "short README, run in a few commands" and the project rule for a comprehensive README.
+- Documented the **`patient_id` assumption**: the brief says null for unverified senders, but the answer key expects the identified patient (M011 → P002, M027 → P013). The agent follows the answer key; nothing is disclosed to unverified senders. Also listed under known limitations.
+
+## 2026-10-19 — Fix: unknown senders describing symptoms
+
+- **Found in manual testing.** An unknown sender writing "I've had a bad cough and a fever of 102 for three days, can I be seen soon?" (without saying they were new) was marked urgent but only got "please verify your identity". **No clinician was alerted** and the message went to no queue. The reply also told a possibly new person to "reply from the contact on file". Emergencies were unaffected, because the guard catches them for anyone.
+- **Fix.** For unverified, non-third-party senders: a health concern is routed to a clinician regardless (urgent goes to `clinician_urgent`), since routing discloses nothing. When no record matches, the reply covers both "already a patient: verify" and "new: we're accepting new patients", with first-visit times if they asked to be seen. Refill and records requests from unknown senders are unchanged (request verification only).
+- **Verified.** 4 new tests (205 passing); all labelled sets unchanged (sample 36/40 cached, the same 4 differences; unseen 13/14; exploratory 33/33; manual 30/30); the three live examples now behave as intended.
+
+## 2026-10-19 — Deployment guide updated and production image re-verified
+
+- `docs/deployment.md`: added an overview diagram; a detailed beginner GitHub section (empty repository, checking `.env` is ignored, which files must and must not be committed, first-time Git identity, Windows sign-in on push, "remote already exists"); Groq's per-account daily token limit and its effect on a fresh deployment; a new "A6. Before a live demo or interview" section; and troubleshooting rows for daily-limit hand-offs and rejected pushes.
+- Rebuilt the Docker image with the current code and ran it on port 10000: health OK (AI configured), dashboard deep links served, all 4 published reports present, an emergency escalated via the guard, no `.env` in the image.

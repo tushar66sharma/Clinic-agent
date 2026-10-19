@@ -8,6 +8,7 @@ Principle: **no message is ever dropped, and failure always falls toward a human
 |---|---|---|---|---|
 | AI provider rate limit (429) | `openai.RateLimitError` | Yes, up to `LLM_MAX_RETRIES`, honouring `Retry-After`, exponential backoff | If still failing: `LLMRateLimitError` → fallback path, routed to front desk (or clinician_urgent if the guard saw urgent signs) | "A member of our team will review your message" |
 | Provider timeout | `APITimeoutError` | Yes | Same as above | Same |
+| Provider call hangs past the deadline | `asyncio.wait_for` around the call (`LLM_DEADLINE_SECONDS`, default 240 s) | No | The call is abandoned and the message goes to a human (analysis) or gets the template (reply). Added after live runs showed single Groq requests hanging 6–13 minutes despite the HTTP timeout | Same as above |
 | Provider down / network | `APIConnectionError`, 5xx | Yes | Same as above | Same |
 | Bad API key or no model access | 401 / 403 / 404 | No | Run stops at startup with a clear message if the key is missing. Mid-run, messages fall back to humans | Same as above |
 | Model output not valid JSON or wrong shape | Pydantic validation, or Groq `json_validate_failed` | One repair retry showing the model its error | Then `LLMResponseError` → fallback path | Same as above |
@@ -35,7 +36,7 @@ The client throttles itself before the provider has to refuse. It uses a sliding
 
 | Where | What |
 |---|---|
-| Console log | One line per message: urgency, actions, seconds. HTTP status of each model call |
+| Console log | One line per message: urgency, actions, seconds. HTTP status of each model call. **Warnings** for every retry (rate limit, timeout, connection), every throttle wait of 5 s or more, and every deadline hit |
 | `runs/<time>/traces.json` | Per message: path taken, guard matches, the model's analysis, facts, notes (verification result, rejected replies, assumptions) and every tool call with arguments and results. Verification tokens are masked |
 | `runs/<time>/summary.json` | Duration, provider, models, token usage, count of each path (`emergency_fast_path`, `fallback_no_model` and so on) |
 | `runs/<time>/run_log.json` | Every queue ticket, refill request, reply draft, flag and appointment change |

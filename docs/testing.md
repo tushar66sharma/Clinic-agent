@@ -112,6 +112,24 @@ A full uncached run of the 40 sample messages uses about 70 model requests and 6
 | Cost on Groq's free tier | $0 |
 | Cost at Groq's published paid rates ($0.15 / $0.60 per million tokens for gpt-oss-120b; $0.075 / $0.30 for gpt-oss-20b, checked 2026-10-18) | about **$0.014 per 40-message run** |
 
+### Live runs on 2026-10-18 (afternoon, new API key)
+
+| Run | Model | Result | Notes |
+|---|---|---|---|
+| 40 sample messages from `edvak_forge_data`, **fully fresh** | gpt-oss-120b | **37 / 40**, 5/5 emergencies, 0 violations | 70 requests, 96,826 tokens, $0.019 at paid rates. M006 was handled exactly as labelled this time, showing run-to-run variation on borderline messages |
+| 33 exploratory, blind first run | gpt-oss-20b | **28 / 33**, 8/8 emergencies, 0 violations | Typo and Hinglish chest pain caught by the AI. 5 misses led to 4 fixes |
+| 33 exploratory, after fixes | gpt-oss-20b | **33 / 33** | Not blind |
+| 40 sample re-checked after fixes, cached answers | gpt-oss-120b | 36 / 40, same 4 differences as before | No regressions from the fixes |
+
+**Findings from these runs, all fixed and covered by tests:**
+- **Single Groq requests hung for 6–13 minutes** despite the HTTP timeout. Each AI call now has a hard deadline (`LLM_DEADLINE_SECONDS`, 240 s), after which the message goes to a human.
+- **No visibility into retries.** The console now warns on every retry, rate limit, timeout and long throttle wait.
+- **Groq limits are per account, not per key.** A new key in the same account hit "tokens per day: Limit 200000, Used 198840". This is documented, with workarounds, in ai-integration.md.
+- **`output_parse_failed` from Groq** (the model answered in prose) now gets the repair retry.
+- **Clinician routing on plain bookings** (smaller model). Routing now requires a health concern.
+- **Manipulation not flagged when the model calls it spam.** A code-level manipulation check flags it independently, with 0 false positives on the 87 test messages.
+- **Evaluation false positive:** a medicine the patient named themselves no longer counts as advice.
+
 ### Known limits of the evaluation
 
 - The clinical-advice and reply-language checks are pattern heuristics. Replies were also read by hand for this submission.

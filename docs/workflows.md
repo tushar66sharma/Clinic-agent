@@ -58,6 +58,8 @@ flowchart TD
 
 A sender is verified by writing from the phone or email on file for the patient or their caregiver, or by giving a name with the matching date of birth. An unverified sender asking about a different named person is treated as a **third party** and gets `decline_disclosure`, whatever role the model guessed. Other unverified requests for health data get `request_verification`. The reply never confirms whether a record exists.
 
+**Health concerns never wait for verification.** If an unverified sender describes symptoms, a clinician is alerted anyway (`route_to_clinician`, `clinician_urgent` when urgent), because routing reveals nothing to the sender. If no record matches at all, the reply covers both possibilities: verify if you're already a patient, or, if you're new, here are first-visit times (`offer_new_patient_booking`, when they asked to be seen). Refill and records requests from unknown senders still only get `request_verification`.
+
 ## 4. Refill request
 
 ```mermaid
