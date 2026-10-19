@@ -105,9 +105,73 @@ def run(base: str, shots: Path) -> None:
                 no_horizontal_scroll(page, label)
                 shot(page, shots / f"{name}-{file}.png")
 
+            if not mobile:
+                behaviour_checks(page, base, errors)
+
             check(not errors, f"no browser console errors {errors[:3] if errors else ''}")
             page.close()
         browser.close()
+
+
+def behaviour_checks(page: Page, base: str, errors: list[str]) -> None:
+    """Manual test plan section H, automated (desktop only)."""
+    print("  -- dashboard behaviour (manual plan section H)")
+    # H2: date-of-birth format validation
+    nav(page, False, "New message")
+    page.get_by_label("Date of birth (optional)").fill("20-11-1990")
+    page.get_by_role("button", name="Process message").click()
+    check(page.get_by_text("Use the format YYYY-MM-DD.").is_visible(), "H2 wrong date-of-birth format is rejected")
+
+    # H3: reset dialog can be cancelled with the button and with Esc
+    nav(page, False, "Staff queues")
+    page.get_by_role("button", name="Reset clinic data").click()
+    dialog = page.get_by_role("dialog")
+    expect(dialog).to_be_visible()
+    dialog.get_by_role("button", name="Cancel").click()
+    check(not dialog.is_visible(), "H3 reset dialog closes on Cancel")
+    page.get_by_role("button", name="Reset clinic data").click()
+    page.keyboard.press("Escape")
+    check(not page.get_by_role("dialog").is_visible(), "H3 reset dialog closes on Esc")
+
+    # H4 / H5: schedule shows holidays and provider leave
+    nav(page, False, "Schedule")
+    page.get_by_label("Date").fill("2026-11-27")
+    expect(page.get_by_text("Clinic closed (holiday)")).to_be_visible(timeout=10_000)
+    check(True, "H4 27 Nov shows clinic closed (holiday)")
+    page.get_by_label("Date").fill("2026-11-18")
+    expect(page.get_by_text("On leave").first).to_be_visible(timeout=10_000)
+    check(True, "H5 18 Nov shows Dr. Okafor on leave")
+
+    # H8: keyboard users get a skip link first, and focus is visible
+    page.goto(base + "/")
+    expect(page.get_by_role("heading", name="Inbox")).to_be_visible()
+    page.wait_for_load_state("networkidle")  # styles applied before measuring the outline
+    page.keyboard.press("Tab")
+    focused = page.evaluate("document.activeElement && document.activeElement.textContent")
+    check("Skip to content" in (focused or ""), "H8 first Tab reaches 'Skip to content'")
+    outline = page.evaluate("getComputedStyle(document.activeElement).outlineStyle")
+    check(outline not in ("none", ""), f"H8 focused element has a visible outline ({outline})")
+
+    # H9: copy button on a processed reply
+    page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    page.get_by_role("button", name="Robert Chen").first.click()
+    copy = page.get_by_role("button", name="Copy", exact=True)  # a message body mentions "copy"
+    expect(copy).to_be_visible(timeout=20_000)
+    copy.click()
+    expect(page.get_by_role("button", name="Copied", exact=True)).to_be_visible(timeout=5_000)
+    check(True, "H9 Copy button confirms 'Copied'")
+
+    # H10: server unreachable -> clear message with Try again, not a blank page
+    nav(page, False, "Staff queues")
+    before = len(errors)
+    page.route("**/api/queues", lambda route: route.abort())
+    page.get_by_role("button", name="Refresh").click()
+    expect(page.get_by_text("Cannot reach the server")).to_be_visible(timeout=10_000)
+    check(page.get_by_role("button", name="Try again").is_visible(),
+          "H10 unreachable server shows a clear error with Try again")
+    page.unroute("**/api/queues")
+    # The blocked request above is logged by the browser on purpose; drop only that entry.
+    errors[before:] = [e for e in errors[before:] if "ERR_FAILED" not in e]
 
 
 if __name__ == "__main__":
