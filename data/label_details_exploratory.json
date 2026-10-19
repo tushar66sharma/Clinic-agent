@@ -1,0 +1,58 @@
+{
+  "_about": "Booking constraints for data/messages_exploratory.json (docs/manual-test-plan-exploratory.md).",
+  "T10": {
+    "appointment": {
+      "provider": "KIM",
+      "date_from": "2026-11-09",
+      "date_to": "2026-11-13",
+      "visit_type": "annual_physical"
+    }
+  },
+  "T27": {
+    "appointment": {
+      "provider": "KIM",
+      "date_from": "2026-11-10",
+      "date_to": "2026-11-10",
+      "part_of_day": "afternoon",
+      "visit_type": "telehealth"
+    }
+  },
+  "T28": {
+    "appointment": {
+      "date_from": "2026-11-09",
+      "date_to": "2026-11-09",
+      "visit_type": "sick_visit"
+    }
+  },
+  "T29": {
+    "appointment": {
+      "provider": "PATEL",
+      "date_from": "2026-11-24",
+      "date_to": "2026-11-24",
+      "part_of_day": "morning"
+    }
+  },
+  "T30": {
+    "appointment": {
+      "provider": "KIM",
+      "date_from": "2026-11-18",
+      "date_to": "2026-11-18",
+      "part_of_day": "morning"
+    }
+  },
+  "T31": {
+    "appointment": {
+      "date_from": "2026-11-16",
+      "date_to": "2026-11-20",
+      "visit_type": "annual_physical"
+    }
+  },
+  "T38": {
+    "appointment": {
+      "provider": "KIM",
+      "date_from": "2026-11-13",
+      "date_to": "2026-11-13",
+      "part_of_day": "afternoon"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "_about": "Booking constraints for data/messages_manual.json (docs/manual-test-plan.md).",
+  "A5": {
+    "appointment": {
+      "provider": "KIM",
+      "date_from": "2026-11-09",
+      "date_to": "2026-11-13",
+      "visit_type": "annual_physical"
+    }
+  },
+  "D1": {
+    "appointment": {
+      "provider": "PATEL",
+      "date_from": "2026-11-20",
+      "date_to": "2026-11-20",
+      "part_of_day": "afternoon"
+    }
+  }
+}

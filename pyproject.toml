@@ -49,3 +49,5 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.ruff.lint.per-file-ignores]
 # Markdown table templates are clearer on one line each.
 "src/edvak_forge/evaluation/report.py" = ["E501"]
+"scripts/make_exploratory_set.py" = ["E501"]  # one test case per line
+"scripts/make_manual_set.py" = ["E501"]
